@@ -90,10 +90,36 @@ class NorenApi:
           'span_calculator' :'/SpanCalc',
           'option_greek' :'/GetOptionGreek',
           'get_daily_price_series' :'/EODChartData',      
+          'userdetails' :'/UserDetails',
       },
       'websocket_endpoint': 'wss://wsendpoint/',
       #'eoddata_endpoint' : 'http://eodhost/'
     }
+
+    def userdetails(self):
+        config = NorenApi.__service_config
+
+        # prepare the uri
+        url = f"{config['host']}{config['routes']['userdetails']}"
+        reportmsg(url)
+
+        # prepare the data
+        values = {"source": "API"}
+        values["uid"] = self.__username
+
+        payload = 'jData=' + json.dumps(values) + f'&jKey={self.__susertoken}'
+        reportmsg("Req:" + payload)
+
+        res = requests.post(url, data=payload)
+        reportmsg("Reply:" + res.text)
+
+        resDict = json.loads(res.text)
+
+        if resDict['stat'] != 'Ok':
+            return None
+
+        return resDict
+
 
     def __init__(self, host, websocket):
         self.__service_config['host'] = host
@@ -750,7 +776,7 @@ class NorenApi:
         resDict = json.loads(res.text)
         
         #error is a json with stat and msg wchih we printed earlier.
-        if type(resDict) != list:                            
+        if type(resDict) != list:
                 return None
 
         return resDict
